@@ -3,7 +3,6 @@ import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import lombok.val;
 
-import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.*;
 import org.apache.kafka.streams.kstream.*;
 
@@ -18,7 +17,9 @@ public class PlayCount {
     public static void main(String[] args) {
         // Streams Configuration
         val props = new Properties();
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "lion-play-count4");
+
+        // TODO: change app name
+        props.put(StreamsConfig.APPLICATION_ID_CONFIG, YOUR_APP_NAME);
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "cdh-data-1.gid:9092");
         props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 2 * 1000);
 
@@ -33,18 +34,18 @@ public class PlayCount {
 
         // Play count by User
         val builder = new StreamsBuilder();
-        KStream<String, LogEvent> playStream = builder.stream("lion-avro", Consumed.with(keyAvroSerde, valueAvroSerde));
 
-        playStream.groupByKey().aggregate(() -> "abc", (key, value, aggregate) -> aggregate);
-        val groupedStream = playStream.map((key, value) -> new KeyValue<>(value.getUserid().toString(), 1))
-                .groupByKey(Serialized.with(Serdes.String(), Serdes.Integer()));
-        val count = groupedStream.count().toStream();
-        count.print(Printed.toSysOut());
+        // TODO: how to get LogEvent class
+        // TODO: change input topic
+        KStream<String, LogEvent> playStream = builder.stream(YOUR_INPUT_TOPIC, Consumed.with(keyAvroSerde, valueAvroSerde));
+
+        val count = ? // TODO: count stream group by user
 
         val longAvroSerde = new serde.LongAvroSerde();
         longAvroSerde.configure(serdeConfiguration, false);
 
-        count.to("lion-avro-out", Produced.with(keyAvroSerde, longAvroSerde));
+        // TODO: change topic
+        count.to(YOUR_OUTPUT_TOPIC, Produced.with(keyAvroSerde, longAvroSerde));
 
         val topology = builder.build();
         System.out.println(topology.describe());
